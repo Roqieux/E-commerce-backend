@@ -9,13 +9,15 @@ router.get('/', async (req, res) => {
   try {
     const productData = await Product.findAll({
       include: [
-        {
-          model: Category
+        { 
+          model: Tag, 
+          attributes: ['tag_name']
         },
         {
-          model: Tag
+          model: Category,
+          attributes: ['category_name']
         }
-      ],
+      ]
     });
     res.status(200).json(productData);
   } catch (err) {
@@ -27,16 +29,17 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   try {
-    const productData = await Product.findByPk(req.params.id, 
-      {include: 
-        [
-          { 
-            model:Category 
-          },
-          { 
-            model: Tag
-          }
-        ]
+    const productData = await Product.findByPk(req.params.id, { 
+      include: [
+        {
+          model: Tag,
+          attributes: ['tag_name']
+        },
+        {        
+          model: Category,
+          attributes: ['category_name']
+        }
+      ]
       });
 
       if(!productData) {
@@ -51,7 +54,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // create new product
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -60,18 +63,18 @@ router.post('/', async (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
-    try {
-      const productData = await Product.create({
-        id: req.body.product_id,
-        product_name: req.body.product_name,
-        price: req.body.price,
-        stock: req.body.stock,
-        category_id: req.body.category_id
-      });
-      res.status(200).json(productData)
-    } catch (err) {
-      res.status(400).json(err);
-    }
+    // try {
+    //   const productData = await Product.create({
+    //     product_name: req.body.product_name,
+    //     price: req.body.price,
+    //     stock: req.body.stock,
+    //     category_id: req.body.category_id,  
+    //     tagIds: req.body.tagIds      
+    //   });
+    //   res.status(200).json(productData)
+    // } catch (err) {
+    //   res.status(400).json(err);
+    // }
 
   Product.create(req.body)
     .then((product) => {
@@ -140,8 +143,19 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   // delete one product by its `id` value
+  try {
+    const productDelete = await Product.destroy({
+      where: {
+        id: req.params.id,
+      },
+    });
+    res.status(200).json(productDelete);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
+
 
 module.exports = router;
